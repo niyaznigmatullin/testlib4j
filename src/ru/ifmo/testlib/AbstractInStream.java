@@ -39,7 +39,7 @@ public abstract class AbstractInStream implements InStream {
 			reader = new BufferedReader(new FileReader(file));
 		} catch (IOException ex) {
 		    // The output file might not exist, because the participant is "evil".
-			throw getExceptionForInputMismatch("File not found", ex);
+			throw quit(Outcome.Type.PE, "File not found");
 		}
 		scanChar();
 	}
@@ -103,7 +103,7 @@ public abstract class AbstractInStream implements InStream {
 			nextChar();
 		}
 		if (isEoF()) {
-			throw getExceptionForInputMismatch("Unexpected end of file");
+			throw quit(Outcome.Type.PE, "Unexpected end of file");
 		}
 		StringBuilder builder = new StringBuilder();
 		while (!isEoF() && after.indexOf((char) currChar) < 0) {
@@ -126,8 +126,27 @@ public abstract class AbstractInStream implements InStream {
 		try {
 			return Integer.parseInt(word);
 		} catch (NumberFormatException ex) {
-			throw getExceptionForInputMismatch(String.format("A 32-bit signed integer expected, %s found", word), ex);
+			throw quit(Outcome.Type.PE, "A 32-bit signed integer expected, %s found", word);
 		}
+	}
+
+	@Override
+	public int nextInt(int from, int to, String variableName) {
+		int result = nextInt();
+		if (result < from || result > to) {
+			if (variableName.isEmpty()) {
+				throw quit(Outcome.Type.WA, "Integer %d violates the range [%d, %d]", result, from, to);
+			} else {
+				throw quit(Outcome.Type.WA, "Integer parameter [name=%s] equals to %d " +
+								"violates the range [%d, %d]", variableName, result, from, to);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public int nextInt(int from, int to) {
+		return nextInt(from, to, "");
 	}
 
 	public long nextLong() {
@@ -135,8 +154,27 @@ public abstract class AbstractInStream implements InStream {
 		try {
 			return Long.parseLong(word);
 		} catch (NumberFormatException ex) {
-			throw getExceptionForInputMismatch(String.format("A 64-bit signed integer expected, %s found", word), ex);
+			throw quit(Outcome.Type.PE, "A 64-bit signed integer expected, %s found", word);
 		}
+	}
+
+	@Override
+	public long nextLong(long from, long to, String variableName) {
+		long result = nextLong();
+		if (result < from || result > to) {
+			if (variableName.isEmpty()) {
+				throw quit(Outcome.Type.WA, "Integer %d violates the range [%d, %d]", result, from, to);
+			} else {
+				throw quit(Outcome.Type.WA, "Integer parameter [name=%s] equals to %d " +
+								"violates the range [%d, %d]", variableName, result, from, to);
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public long nextLong(long from, long to) {
+		return nextLong(from, to, "");
 	}
 
 	public BigInteger nextBigInteger() {
@@ -144,7 +182,7 @@ public abstract class AbstractInStream implements InStream {
 		try {
 			return new BigInteger(word);
 		} catch (NumberFormatException ex) {
-			throw getExceptionForInputMismatch(String.format("An integer expected, %s found", word), ex);
+			throw quit(Outcome.Type.PE, "An integer expected, %s found", word);
 		}
 	}
 
@@ -153,7 +191,7 @@ public abstract class AbstractInStream implements InStream {
 		try {
 			return Float.parseFloat(word);
 		} catch (NumberFormatException ex) {
-			throw getExceptionForInputMismatch(String.format("A float number expected, %s found", word), ex);
+			throw quit(Outcome.Type.PE, "A float number expected, %s found", word);
 		}
 	}
 
@@ -166,7 +204,7 @@ public abstract class AbstractInStream implements InStream {
 			}
 			return v;
 		} catch (NumberFormatException ex) {
-			throw getExceptionForInputMismatch(String.format("A double number expected, %s found", word), ex);
+			throw quit(Outcome.Type.PE, "A double number expected, %s found", word);
 		}
 	}
 
@@ -195,42 +233,20 @@ public abstract class AbstractInStream implements InStream {
 			}
 			return currChar;
 		} catch (IOException ex) {
-			throw getExceptionForInputMismatch(ex);
+			throw quit(Outcome.Type.PE, "");
 		}
 	}
 
-	/**
-	 * Returns a correct exception when input mismatch occurs. Different types
-	 * of input streams generate different exceptions on crash.
-	 * 
-	 * @param message exception message (may be null).
-	 * @param cause exception cause (may be null).
-	 * 
-	 * @return the exception.
-	 */
-	protected abstract Outcome getExceptionForInputMismatch(String message, Exception cause);
-
-	/**
-	 * Returns a correct exception when input mismatch occurs. Different types
-	 * of input streams generate different exceptions on crash.
-	 * 
-	 * @param message exception message (may be null).
-	 * 
-	 * @return the exception.
-	 */
-	private Outcome getExceptionForInputMismatch(String message) {
-		return getExceptionForInputMismatch(message, null);
+	@Override
+	public Outcome quit(Outcome.Type type, String format, Object... obj) {
+		throw Outcome.quit(mapOutcomeType(type), format, obj);
 	}
 
 	/**
-	 * Returns a correct exception when input mismatch occurs. Different types
-	 * of input streams generate different exceptions on crash.
-	 * 
-	 * @param cause exception cause (may be null).
-	 * 
-	 * @return the exception.
+	 * Maps {@code Outcome.Type} to the one suitable for specific {@code InStream}
+	 *
+	 * @param type the {@code Outcome.Type} to map
+	 * @return the resulting {@code Outcome.Type}
 	 */
-	private Outcome getExceptionForInputMismatch(Exception cause) {
-		return getExceptionForInputMismatch(null, cause);
-	}
+	protected abstract Outcome.Type mapOutcomeType(Outcome.Type type);
 }

@@ -9,10 +9,10 @@ package ru.ifmo.testlib;
  * @author Sergey Melnikov
  */
 public class Outcome extends RuntimeException {
-	public static void quit(Type type, String format, Object... obj) {
+	public static Outcome quit(Type type, String format, Object... obj) {
 		throw new Outcome(type, String.format(format, obj));
 	}
-	
+
 	@Deprecated
 	public static void fail(String format, Object... obj) {
 		throw new Outcome(Type.FAIL, String.format(format, obj));

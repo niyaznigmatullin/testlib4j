@@ -119,11 +119,53 @@ public interface InStream extends Closeable {
     int nextInt();
 
     /**
+     * Returns next {@code int} checking it being in range from {@code from} to {@code to} inclusive.
+     * Whitespace characters are used as delimiters.
+     *
+     * @param from {@code int} the starting point of the range
+     * @param to {@code int} the ending point of the range
+     * @return next {@code int}
+     */
+    int nextInt(int from, int to);
+
+    /**
+     * Returns next {@code int} checking it being in range from {@code from} to {@code to} inclusive.
+     * Whitespace characters are used as delimiters.
+     *
+     * @param from {@code int} the starting point of the range
+     * @param to {@code int} the ending point of the range
+     * @param variableName {@code String} the name of variable
+     * @return next {@code int}
+     */
+    int nextInt(int from, int to, String variableName);
+
+    /**
      * Returns next {@code long}. Whitespace characters are used as delimiters.
      *
      * @return next {@code long}.
      */
     long nextLong();
+
+    /**
+     * Returns next {@code long} checking it being in range from {@code from} to {@code to} inclusive.
+     * Whitespace characters are used as delimiters.
+     *
+     * @param from {@code long} the starting point of the range
+     * @param to {@code long} the ending point of the range
+     * @return next {@code long}
+     */
+    long nextLong(long from, long to);
+
+    /**
+     * Returns next {@code long} checking it being in range from {@code from} to {@code to} inclusive.
+     * Whitespace characters are used as delimiters.
+     *
+     * @param from {@code long} the starting point of the range
+     * @param to {@code long} the ending point of the range
+     * @param variableName {@code String} the name of variable
+     * @return next {@code long}
+     */
+    long nextLong(long from, long to, String variableName);
 
     /**
      * Returns next {@link BigInteger}. Whitespace characters are used as delimiters.
@@ -152,4 +194,13 @@ public interface InStream extends Closeable {
      * @return unread part of current line.
      */
     String nextLine();
+
+    /**
+     * Quits according to the type of {@code InStream}
+     *
+     * @param type the {@code Outcome.Type} describing the verdict
+     * @param format the {@code String} format string
+     * @param obj {@code Object...} the list of arguments
+     */
+    Outcome quit(Outcome.Type type, String format, Object... obj);
 }

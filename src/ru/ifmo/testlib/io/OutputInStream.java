@@ -20,7 +20,8 @@ public class OutputInStream extends AbstractInStream {
 		super(file);
 	}
 
-	protected Outcome getExceptionForInputMismatch(String message, Exception cause) {
-		return new Outcome(Outcome.Type.PE, message, cause);
+	@Override
+	protected Outcome.Type mapOutcomeType(Outcome.Type type) {
+		return type;
 	}
 }
