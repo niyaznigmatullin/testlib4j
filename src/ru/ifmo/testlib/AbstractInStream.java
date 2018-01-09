@@ -98,7 +98,7 @@ public abstract class AbstractInStream implements InStream {
 		}
 	}
 
-	public String nextToken(String before, String after) {
+	public String nextToken(String before, String after, int limit) {
 		while (!isEoF() && before.indexOf((char) currChar) >= 0) {
 			nextChar();
 		}
@@ -107,22 +107,42 @@ public abstract class AbstractInStream implements InStream {
 		}
 		StringBuilder builder = new StringBuilder();
 		while (!isEoF() && after.indexOf((char) currChar) < 0) {
+			if (builder.length() == limit) {
+				throw new LengthLimitExceeded(builder.toString());
+			}
 			builder.append((char) currChar);
 			nextChar();
 		}
 		return builder.toString();
 	}
 
+	public String nextToken(String before, String after) {
+		return nextToken(before, after, Integer.MAX_VALUE);
+	}
+
+	public String nextToken(String skip, int length) {
+		return nextToken(skip, skip, length);
+	}
+
 	public String nextToken(String skip) {
 		return nextToken(skip, skip);
 	}
 
+	public String nextToken(int length) {
+		return nextToken(" \t\r\n", length);
+	}
+
 	public String nextToken() {
-		return nextToken(" \t\r\n");
+		return nextToken(Integer.MAX_VALUE);
 	}
 
 	public int nextInt() {
-		String word = nextToken();
+		String word;
+		try {
+			word = nextToken(25);
+		} catch (LengthLimitExceeded ex) {
+			throw quit(Outcome.Type.PE, "A 32-bit signed integer expected, %s found", ex.getReadPart());
+		}
 		try {
 			return Integer.parseInt(word);
 		} catch (NumberFormatException ex) {
@@ -150,7 +170,12 @@ public abstract class AbstractInStream implements InStream {
 	}
 
 	public long nextLong() {
-		String word = nextToken();
+		String word;
+		try {
+			word = nextToken(25);
+		} catch (LengthLimitExceeded ex) {
+			throw quit(Outcome.Type.PE, "A 64-bit signed integer expected, %s found", ex.getReadPart());
+		}
 		try {
 			return Long.parseLong(word);
 		} catch (NumberFormatException ex) {
@@ -208,9 +233,12 @@ public abstract class AbstractInStream implements InStream {
 		}
 	}
 
-	public String nextLine() {
+	public String nextLine(int limit) {
 		StringBuilder sb = new StringBuilder();
 		while (!isEoLn()) {
+			if (sb.length() == limit) {
+				throw new LengthLimitExceeded(sb.toString());
+			}
 			sb.append((char) (currChar));
 			nextChar();
 		}
@@ -218,6 +246,10 @@ public abstract class AbstractInStream implements InStream {
 		if (currChar == '\n') nextChar();
 
 		return sb.toString();
+	}
+
+	public String nextLine() {
+		return nextLine(Integer.MAX_VALUE);
 	}
 
 	/**

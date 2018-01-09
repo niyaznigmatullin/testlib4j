@@ -90,10 +90,33 @@ public interface InStream extends Closeable {
      *
      * @param before the {@link String} containing characters to be used as delimiters before the token.
      * @param after the {@link String} containing characters to be used as delimiters after the token.
-     *  
+     * @param limit an {@code int} denoting the maximum number of characters to be in a token,
+     *              if longer token found, then {@link LengthLimitExceeded} is thrown
+     *
+     * @return next {@link String} token;
+     */
+    String nextToken(String before, String after, int limit);
+
+    /**
+     * Returns next {@link String} token with specified delimiters.
+     *
+     * @param before the {@link String} containing characters to be used as delimiters before the token.
+     * @param after the {@link String} containing characters to be used as delimiters after the token.
+     *
      * @return next {@link String} token;
      */
     String nextToken(String before, String after);
+
+    /**
+     * Returns next {@link String} token with specified delimiters.
+     *
+     * @param skip the {@link String} containing characters to be used as delimiters before and after the token.
+     * @param limit an {@code int} denoting the maximum number of characters to be in a token,
+     *              if longer token found, then {@link LengthLimitExceeded} is thrown
+     *
+     * @return next {@link String} token;
+     */
+    String nextToken(String skip, int limit);
 
     /**
      * Returns next {@link String} token with specified delimiters.
@@ -106,7 +129,16 @@ public interface InStream extends Closeable {
 
     /**
      * Returns next {@link String} token. Whitespace characters are used as delimiters.
-     * 
+     * @param limit an {@code int} denoting the maximum number of characters to be in a token,
+     *              if longer token found, then {@link LengthLimitExceeded} is thrown
+     *
+     * @return next {@link String} token.
+     */
+    String nextToken(int limit);
+
+    /**
+     * Returns next {@link String} token. Whitespace characters are used as delimiters.
+     *
      * @return next {@link String} token.
      */
     String nextToken();
@@ -187,6 +219,15 @@ public interface InStream extends Closeable {
      * @return next {@code double}.
      */
     double nextDouble();
+
+    /**
+     * Returns unread part of current line of length up to {@code int limit}.
+     * @param limit an {@code int} denoting the maximum number of characters to be left in a line,
+     *              if unread part is longer, then {@link LengthLimitExceeded} is thrown
+     *
+     * @return unread part of current line.
+     */
+    String nextLine(int limit);
 
     /**
      * Returns unread part of current line.
